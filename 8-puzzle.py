@@ -30,7 +30,7 @@ eight_goal_state = [[1, 2, 3],
                     [4, 5, 6],
                     [7, 8, 0]]
 
-#update and return these 3 numbers at the end of the program
+#update and return these 3 variables at the end of the program
 total_nodes = 0
 max_in_queue = 0
 goal_depth = 0
@@ -91,19 +91,84 @@ def run_algorithm(puzzle, algorithm_number):
         uniform_cost_search(puzzle)
     if algorithm_number == 2:
         print("You selected: A* with the Misplaced Tile heuristic" + '\n')
+        #call Misplaced Tile, h = number of tiles that differ from goal state
     if algorithm_number == 3:
         print("You selected: Manhattan distance heuristic" + '\n')
+        #add the distance each tile is away from the goal state
 
 def uniform_cost_search(puzzle):
     print("Expanding state: ")
     print_puzzle(puzzle)
     init_node = Node(1,0,0, puzzle)
+    print("Initial puzzle: ")
+    print init_node.puzzle
+
+    # populate init_node with children
     run_A_star(init_node)
+
+    # print the puzzles in init_node
+    print_node(init_node)
+
 
 def run_A_star(start_node):
     #how do I know what children to add?
     #how do I take this 8-puzzle and put it into a node data structure
-    start_node.add_child()
+
+    #nested for loop for this?
+    for i in xrange(3):
+        for j in xrange(3):
+            if start_node.puzzle[i][j] == 0:
+                blank_x = i
+                blank_y = j
+
+    #add states for moving blank up, down, left, or right
+    if((blank_x < 3 or blank_y - 1 < 3) and (blank_x >= 0 or blank_y - 1 >= 0 )): #swap blank tile with tile up
+        start_node.add_child( create_child(start_node.puzzle, "up", blank_x, blank_y) )
+    if ((blank_x < 3 or blank_y + 1 < 3) and (blank_x >= 0 or blank_y + 1 >= 0)):  # swap blank tile with tile up
+        start_node.add_child( create_child(start_node.puzzle, "down", blank_x, blank_y) )
+    if ((blank_x - 1 < 3 or blank_y < 3) and (blank_x - 1 >= 0 or blank_y >= 0)):  # swap blank tile with tile up
+        start_node.add_child( create_child(start_node.puzzle, "left", blank_x, blank_y) )
+    if ((blank_x + 1 < 3 or blank_y < 3) and (blank_x + 1 >= 0 or blank_y >= 0)):  # swap blank tile with tile up
+        start_node.add_child( create_child( start_node.puzzle, "right", blank_x, blank_y) )
+
+    print("The best state to expand with a g(n) = 1 and h(n) = 4 is")
+
+def create_child(puzzle, swap_index, blank_x, blank_y):
+    child_puzzle = puzzle
+    new_x = 4
+    new_y = 4
+    blank_x = int(blank_x)
+    blank_y = int(blank_y)
+    print "Blank x and y: "
+    print blank_x
+    print '\n't
+    print blank_y
+    print '\n'
+    if swap_index == "up":
+        # y - 1 goes up
+        new_x, new_y = blank_x, blank_y - 1
+        print("new_x: " + str(new_x) + " new_y: " + str(new_y) + '\n')
+    if swap_index == "down":
+        # y + 1 goes down
+        new_x, new_y = blank_x, blank_y + 1
+        print("new_x: " + str(new_x) + " new_y: " + str(new_y) + '\n')
+    if swap_index == "left":
+        # x - 1 goes left
+        new_x, new_y = blank_x - 1, blank_y
+        print("new_x: " + str(new_x) + " new_y: " + str(new_y) + '\n')
+    if swap_index == "right":
+        # x + 1 goes right
+        new_x, new_y = blank_x + 1, blank_y
+        print("new_x: " + str(new_x) + " new_y: " + str(new_y) + '\n')
+
+    child_puzzle[new_x, new_y], child_puzzle[blank_x, blank_y] = child_puzzle[blank_x, blank_y], child_puzzle[new_x, new_y]
+    return child_puzzle
+
+def print_node(start_node):
+    print(start_node.puzzle)
+    print("=== Printing Children ===" + '\n')
+    for c in init_node.children:
+        print print_node(c.puzzle)
 
 
 
