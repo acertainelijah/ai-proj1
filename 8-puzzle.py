@@ -1,4 +1,5 @@
 import heapq
+from copy import copy, deepcopy
 
 trivial = [[1, 2, 3],
            [4, 5, 6],
@@ -109,39 +110,56 @@ def uniform_cost_search(puzzle):
     # print the puzzles in init_node
     print_node(init_node)
 
+    # now that tree is created, traverse tree shortest path.
+
 
 def run_A_star(start_node):
     #how do I know what children to add?
     #how do I take this 8-puzzle and put it into a node data structure
 
+    #TODO: use only one variable instead of 4
+    parent_puzzle = deepcopy(start_node.puzzle)
+    parent_puzzle1 = deepcopy(start_node.puzzle)
+    parent_puzzle2 = deepcopy(start_node.puzzle)
+    parent_puzzle3 = deepcopy(start_node.puzzle)
     #nested for loop for this?
     for i in xrange(3):
+        print i
         for j in xrange(3):
             if start_node.puzzle[i][j] == 0:
-                blank_x = i
-                blank_y = j
+                blank_x = j
+                blank_y = i
+                print "Init Blank x and y: "
+                print blank_x
+                print '\n'
+                print blank_y
+                print start_node.puzzle[i][j]
 
     #add states for moving blank up, down, left, or right
-    if((blank_x < 3 or blank_y - 1 < 3) and (blank_x >= 0 or blank_y - 1 >= 0 )): #swap blank tile with tile up
-        start_node.add_child( create_child(start_node.puzzle, "up", blank_x, blank_y) )
-    if ((blank_x < 3 or blank_y + 1 < 3) and (blank_x >= 0 or blank_y + 1 >= 0)):  # swap blank tile with tile up
-        start_node.add_child( create_child(start_node.puzzle, "down", blank_x, blank_y) )
-    if ((blank_x - 1 < 3 or blank_y < 3) and (blank_x - 1 >= 0 or blank_y >= 0)):  # swap blank tile with tile up
-        start_node.add_child( create_child(start_node.puzzle, "left", blank_x, blank_y) )
-    if ((blank_x + 1 < 3 or blank_y < 3) and (blank_x + 1 >= 0 or blank_y >= 0)):  # swap blank tile with tile up
-        start_node.add_child( create_child( start_node.puzzle, "right", blank_x, blank_y) )
+    if((blank_x < 3 and blank_y - 1 < 3) and (blank_x >= 0 and blank_y - 1 >= 0 )): #swap blank tile with tile up
+        start_node.add_child( create_child(list(parent_puzzle), "up", blank_x, blank_y) )
+
+    if ((blank_x < 3 and blank_y + 1 < 3) and (blank_x >= 0 and blank_y + 1 >= 0)):  # swap blank tile with tile up
+        start_node.add_child( create_child(list(parent_puzzle1), "down", blank_x, blank_y) )
+
+    if ((blank_x - 1 < 3 and blank_y < 3) and (blank_x - 1 >= 0 and blank_y >= 0)):  # swap blank tile with tile up
+        start_node.add_child( create_child(list(parent_puzzle2), "left", blank_x, blank_y) )
+
+    if ((blank_x + 1 < 3 and blank_y < 3) and (blank_x + 1 >= 0 and blank_y >= 0)):  # swap blank tile with tile up
+        start_node.add_child( create_child(list(parent_puzzle3), "right", blank_x, blank_y) )
 
     print("The best state to expand with a g(n) = 1 and h(n) = 4 is")
 
 def create_child(puzzle, swap_index, blank_x, blank_y):
-    child_puzzle = puzzle
+    child_puzzle = list(puzzle)
     new_x = 4
     new_y = 4
     blank_x = int(blank_x)
     blank_y = int(blank_y)
+    print swap_index
     print "Blank x and y: "
     print blank_x
-    print '\n't
+    print '\n'
     print blank_y
     print '\n'
     if swap_index == "up":
@@ -161,13 +179,27 @@ def create_child(puzzle, swap_index, blank_x, blank_y):
         new_x, new_y = blank_x + 1, blank_y
         print("new_x: " + str(new_x) + " new_y: " + str(new_y) + '\n')
 
-    child_puzzle[new_x, new_y], child_puzzle[blank_x, blank_y] = child_puzzle[blank_x, blank_y], child_puzzle[new_x, new_y]
+
+    print new_x
+    print new_y
+    print blank_x
+    print blank_y
+    tmp = child_puzzle[new_y][new_x]
+    child_puzzle[new_y][new_x] = child_puzzle[blank_y][blank_x]
+    child_puzzle[blank_y][blank_x] = tmp
+    print tmp
+    print child_puzzle[new_y][new_x]
+    print child_puzzle[blank_y][blank_x]
+    print "Child Puzzle for " + swap_index
+    print_puzzle(child_puzzle)
+    #child_puzzle[new_x][new_y], child_puzzle[blank_x][blank_y] = child_puzzle[blank_x][blank_y], child_puzzle[new_x][new_y]
     return child_puzzle
 
 def print_node(start_node):
-    print(start_node.puzzle)
+    # print(start_node.puzzle)
+    print_puzzle(start_node.puzzle)
     print("=== Printing Children ===" + '\n')
-    for c in init_node.children:
+    for c in start_node.children:
         print print_node(c.puzzle)
 
 
