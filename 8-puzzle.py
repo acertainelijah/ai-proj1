@@ -105,17 +105,23 @@ def uniform_cost_search(puzzle):
     print init_node.puzzle
 
     # populate init_node with children
+    print "1) Populating Tree!"
     run_A_star(init_node)
 
     # print the puzzles in init_node
+    print "2) Printing Tree (starting on init_node):"
     print_node(init_node)
 
     # now that tree is created, traverse tree shortest path.
 
 
 def run_A_star(start_node):
+#def run_A_star(start_node, heuristic/algorithm):
     #how do I know what children to add?
     #how do I take this 8-puzzle and put it into a node data structure
+
+    #TODO**** use a queue
+    #TODO******** Instead of creating the whole tree, create the cheapest tree
 
     #TODO: use only one variable instead of 4
     parent_puzzle = deepcopy(start_node.puzzle)
@@ -137,18 +143,18 @@ def run_A_star(start_node):
 
     #add states for moving blank up, down, left, or right
     if((blank_x < 3 and blank_y - 1 < 3) and (blank_x >= 0 and blank_y - 1 >= 0 )): #swap blank tile with tile up
-        start_node.add_child( create_child(list(parent_puzzle), "up", blank_x, blank_y) )
+        start_node.add_child(create_child(list(parent_puzzle), "up", blank_x, blank_y))
 
     if ((blank_x < 3 and blank_y + 1 < 3) and (blank_x >= 0 and blank_y + 1 >= 0)):  # swap blank tile with tile up
-        start_node.add_child( create_child(list(parent_puzzle1), "down", blank_x, blank_y) )
+        start_node.add_child(create_child(list(parent_puzzle1), "down", blank_x, blank_y))
 
     if ((blank_x - 1 < 3 and blank_y < 3) and (blank_x - 1 >= 0 and blank_y >= 0)):  # swap blank tile with tile up
-        start_node.add_child( create_child(list(parent_puzzle2), "left", blank_x, blank_y) )
+        start_node.add_child(create_child(list(parent_puzzle2), "left", blank_x, blank_y))
 
     if ((blank_x + 1 < 3 and blank_y < 3) and (blank_x + 1 >= 0 and blank_y >= 0)):  # swap blank tile with tile up
-        start_node.add_child( create_child(list(parent_puzzle3), "right", blank_x, blank_y) )
+        start_node.add_child(create_child(list(parent_puzzle3), "right", blank_x, blank_y))
 
-    print("The best state to expand with a g(n) = 1 and h(n) = 4 is")
+    #todo output like this print("The best state to expand with a g(n) = 1 and h(n) = 4 is")
 
 def create_child(puzzle, swap_index, blank_x, blank_y):
     child_puzzle = list(puzzle)
@@ -192,15 +198,23 @@ def create_child(puzzle, swap_index, blank_x, blank_y):
     print child_puzzle[blank_y][blank_x]
     print "Child Puzzle for " + swap_index
     print_puzzle(child_puzzle)
+    print ""
     #child_puzzle[new_x][new_y], child_puzzle[blank_x][blank_y] = child_puzzle[blank_x][blank_y], child_puzzle[new_x][new_y]
-    return child_puzzle
+    # if(child_puzzle == eight_goal_state): #if goal state, done!
+    #     print("Goal!")
+    return Node(1, 0, 0, child_puzzle)
+    # else:
+    #     print("Not Goal :( keep going!!!")
+    #     run_A_star(Node(1, 0, 0, child_puzzle))
+
+
 
 def print_node(start_node):
     # print(start_node.puzzle)
     print_puzzle(start_node.puzzle)
     print("=== Printing Children ===" + '\n')
     for c in start_node.children:
-        print print_node(c.puzzle)
+        print print_node(c)
 
 
 
