@@ -1,5 +1,6 @@
 import heapq
 import Queue
+import operator
 from copy import copy, deepcopy
 
 trivial = [[1, 2, 3],
@@ -103,6 +104,7 @@ def run_algorithm(puzzle, algorithm_number):
         uniform_cost_search(puzzle)
     if algorithm_number == 2:
         print("You selected: A* with the Misplaced Tile heuristic" + '\n')
+        misplaced_tile_search(puzzle)
         #call Misplaced Tile, h = number of tiles that differ from goal state
     if algorithm_number == 3:
         print("You selected: Manhattan distance heuristic" + '\n')
@@ -144,6 +146,53 @@ def uniform_cost_search(puzzle):
         print_node(init_node)
 
         # now that tree is created, traverse tree shortest path.
+
+def misplaced_tile_search(puzzle):
+    global max_in_queue, total_nodes, goal_depth
+
+    print("Expanding state: ")
+    print_puzzle(puzzle)
+    heuristic = find_missing_tiles(puzzle)
+    print("Number of missing tiles: " + str(heuristic))
+    init_node = Node(1, heuristic, puzzle)
+    #add initial node to the queue
+    nodes.append(init_node)
+    puzzles_found.append(init_node.puzzle)
+    print("Initial puzzle: ")
+    print init_node.puzzle
+
+    while len(nodes) > 0:
+        nodes.sort(key=operator.attrgetter('f'))
+        max_in_queue = max(max_in_queue, len(nodes))
+        node = nodes.pop(0)
+        puzzles_found.append(node.puzzle)
+        # populate init_node with children
+        print("Checking node puzzle")
+        if node.puzzle == eight_goal_state:
+            print "Goal!"
+            print_puzzle(node.puzzle)
+            goal_depth = node.g - 1
+            break
+        else:
+            print "Populating Tree!"
+            total_nodes = total_nodes + 1
+            run_A_star(node, node.h, node.g) #expand function
+            # run_A_star(init_node)
+
+        # print the puzzles in init_node
+        print "Done running A-star algorithm on 8-puzzle!"
+        print "Printing Nodes from init_node:"
+        print_node(init_node)
+
+def find_missing_tiles(puzzle):
+    num_missing = 0
+    for i in xrange(3):
+        for j in xrange(3):
+            if(puzzle[i][j] != 0 and puzzle[i][j] != eight_goal_state[i][j]):
+                num_missing = num_missing + 1
+    return num_missing
+
+
 
 
 def run_A_star(start_node, h, g):
