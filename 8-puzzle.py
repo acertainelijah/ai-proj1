@@ -127,7 +127,7 @@ def uniform_cost_search(puzzle):
         if node.puzzle == eight_goal_state:
             print "Goal!"
             print_puzzle(node.puzzle)
-            goal_depth = node.g
+            goal_depth = node.g - 1
             break
         else:
             print "Populating Tree!"
@@ -284,7 +284,7 @@ def create_child(puzzle, swap_index, blank_x, blank_y, h, g):
     #child_puzzle[new_x][new_y], child_puzzle[blank_x][blank_y] = child_puzzle[blank_x][blank_y], child_puzzle[new_x][new_y]
     # if(child_puzzle == eight_goal_state): #if goal state, done!
     #     print("Goal!")
-    return Node(g, h, child_puzzle)
+    return Node(g + 1, h, child_puzzle)
     # else:
     #     print("Not Goal :( keep going!!!")
     #     run_A_star(Node(1, 0, 0, child_puzzle))
