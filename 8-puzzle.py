@@ -69,6 +69,9 @@ def main():
     #run puzzle on a selected A* search algorithm
     run_algorithm(curr_puzzle, curr_algorithm)
     print("Done with 8-puzzle!")
+    print("total_nodes: " + str(total_nodes))
+    print("max_in_queue: " + str(max_in_queue))
+    print("goal_depth: " + str(goal_depth))
 
 def print_puzzle(puzzle):
     print('\n'.join([''.join(['{:4}'.format(item) for item in row]) for row in puzzle]))
@@ -105,6 +108,8 @@ def run_algorithm(puzzle, algorithm_number):
         #add the distance each tile is away from the goal state
 
 def uniform_cost_search(puzzle):
+    global max_in_queue, total_nodes, goal_depth
+
     print("Expanding state: ")
     print_puzzle(puzzle)
     heuristic = 0
@@ -115,26 +120,30 @@ def uniform_cost_search(puzzle):
     print init_node.puzzle
 
     while len(nodes) > 0:
+        max_in_queue = max(max_in_queue, len(nodes))
         node = nodes.pop(0)
         # populate init_node with children
         print("Checking node puzzle")
         if node.puzzle == eight_goal_state:
             print "Goal!"
             print_puzzle(node.puzzle)
+            goal_depth = node.g
             break
         else:
-            print "1) Populating Tree!"
-            run_A_star(node, heuristic)
+            print "Populating Tree!"
+            total_nodes = total_nodes + 1
+            run_A_star(node, node.h, node.g) #expand function
             # run_A_star(init_node)
 
-            # print the puzzles in init_node
-            print "2) Printing Tree Node:"
-            print_node(node)
+        # print the puzzles in init_node
+        print "Done running A-star algorithm on 8-puzzle!"
+        print "Printing Nodes from init_node:"
+        print_node(init_node)
 
         # now that tree is created, traverse tree shortest path.
 
 
-def run_A_star(start_node, h):
+def run_A_star(start_node, h, g):
 #def run_A_star(start_node, heuristic/algorithm):
     #how do I know what children to add?
     #how do I take this 8-puzzle and put it into a node data structure
@@ -162,7 +171,7 @@ def run_A_star(start_node, h):
 
     #add states for moving blank up, down, left, or right
     if ((blank_x + 1 < 3 and blank_y < 3) and (blank_x + 1 >= 0 and blank_y >= 0)):  # swap blank tile with tile 'Right'
-        right_child = create_child(list(parent_puzzle3), "right", blank_x, blank_y, h)
+        right_child = create_child(list(parent_puzzle3), "right", blank_x, blank_y, h, g)
         # check if child exists, add if doesn't exist
         node_exists = False
         # iterate through and find
@@ -173,13 +182,13 @@ def run_A_star(start_node, h):
                 break
 
         if node_exists == False:
-            print("Pushing right node!")
+            print("Pushing Right Node!")
             start_node.add_child(right_child)
             nodes.append(right_child)
 
 
     if ((blank_x < 3 and blank_y + 1 < 3) and (blank_x >= 0 and blank_y + 1 >= 0)):  # swap blank tile with tile 'Down'
-        down_child = create_child(list(parent_puzzle1), "down", blank_x, blank_y, h)
+        down_child = create_child(list(parent_puzzle1), "down", blank_x, blank_y, h, g)
         # check if child exists, add if doesn't exist
         node_exists = False
         # iterate through and find
@@ -189,12 +198,12 @@ def run_A_star(start_node, h):
                 print("Down Node already exists! Not pushing")
                 break
         if node_exists == False:
-            print("Pushing down node!")
+            print("Pushing Down Node!")
             start_node.add_child(down_child)
             nodes.append(down_child)
 
     if ((blank_x - 1 < 3 and blank_y < 3) and (blank_x - 1 >= 0 and blank_y >= 0)):  # swap blank tile with tile 'Left'
-        left_child = create_child(list(parent_puzzle2), "left", blank_x, blank_y, h)
+        left_child = create_child(list(parent_puzzle2), "left", blank_x, blank_y, h, g)
         # check if child exists, add if doesn't exist
         node_exists = False
         # iterate through and find
@@ -209,7 +218,7 @@ def run_A_star(start_node, h):
             nodes.append(left_child)
 
     if((blank_x < 3 and blank_y - 1 < 3) and (blank_x >= 0 and blank_y - 1 >= 0 )): #swap blank tile with tile 'Up'
-        up_child = create_child(list(parent_puzzle), "up", blank_x, blank_y, h)
+        up_child = create_child(list(parent_puzzle), "up", blank_x, blank_y, h, g)
         # check if child exists, add if doesn't exist
         node_exists = False
         # iterate through and find
@@ -219,7 +228,7 @@ def run_A_star(start_node, h):
                 print("Down Node already exists! Not pushing")
                 break
         if node_exists == False:
-            print("Pushing up node!")
+            print("Pushing Up Node!")
             start_node.add_child(up_child)
             nodes.append(up_child)
 
@@ -228,7 +237,7 @@ def run_A_star(start_node, h):
 
     #todo output like this: print("The best state to expand with a g(n) = 1 and h(n) = 4 is")
 
-def create_child(puzzle, swap_index, blank_x, blank_y, h):
+def create_child(puzzle, swap_index, blank_x, blank_y, h, g):
     child_puzzle = list(puzzle)
     new_x = 4
     new_y = 4
@@ -275,7 +284,7 @@ def create_child(puzzle, swap_index, blank_x, blank_y, h):
     #child_puzzle[new_x][new_y], child_puzzle[blank_x][blank_y] = child_puzzle[blank_x][blank_y], child_puzzle[new_x][new_y]
     # if(child_puzzle == eight_goal_state): #if goal state, done!
     #     print("Goal!")
-    return Node(1, h, child_puzzle)
+    return Node(g, h, child_puzzle)
     # else:
     #     print("Not Goal :( keep going!!!")
     #     run_A_star(Node(1, 0, 0, child_puzzle))
