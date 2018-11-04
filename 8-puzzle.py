@@ -1,7 +1,10 @@
 import heapq
 import Queue
 import operator
+import time
 from copy import copy, deepcopy
+
+start_time = time.time()
 
 trivial = [[1, 2, 3],
            [4, 5, 6],
@@ -70,10 +73,11 @@ def main():
 
     #run puzzle on a selected A* search algorithm
     run_algorithm(curr_puzzle, curr_algorithm)
-    print("Done with 8-puzzle!")
+    print("8-puzzle Program Successful!")
     print("total_nodes: " + str(total_nodes))
     print("max_in_queue: " + str(max_in_queue))
     print("goal_depth: " + str(goal_depth))
+    print("--- This program ran in %s seconds ---" % (time.time() - start_time))
 
 def print_puzzle(puzzle):
     print('\n'.join([''.join(['{:4}'.format(item) for item in row]) for row in puzzle]))
@@ -102,12 +106,13 @@ def run_algorithm(puzzle, algorithm_number):
     if algorithm_number == 1:
         print("You selected: Uniform Cost" + '\n')
         uniform_cost_search(puzzle)
-    if algorithm_number == 2:
+    elif algorithm_number == 2:
         print("You selected: A* with the Misplaced Tile heuristic" + '\n')
         misplaced_tile_search(puzzle)
         #call Misplaced Tile, h = number of tiles that differ from goal state
-    if algorithm_number == 3:
+    elif algorithm_number == 3:
         print("You selected: Manhattan distance heuristic" + '\n')
+        manhattan_search(puzzle)
         #add the distance each tile is away from the goal state
 
 def uniform_cost_search(puzzle):
@@ -116,7 +121,8 @@ def uniform_cost_search(puzzle):
     print("Expanding state: ")
     print_puzzle(puzzle)
     heuristic = 0
-    init_node = Node(1, heuristic, puzzle)
+    f = 1 + heuristic
+    init_node = Node(1, heuristic, f, puzzle)
     #add initial node to the queue
     nodes.append(init_node)
     puzzles_found.append(init_node.puzzle)
@@ -137,13 +143,13 @@ def uniform_cost_search(puzzle):
         else:
             print "Populating Tree!"
             total_nodes = total_nodes + 1
-            run_A_star(node, node.h, node.g) #expand function
+            run_A_star(node, node.h, node.g, "uniform") #expand function
             # run_A_star(init_node)
 
-        # print the puzzles in init_node
-        print "Done running A-star algorithm on 8-puzzle!"
-        print "Printing Nodes from init_node:"
-        print_node(init_node)
+    # print the puzzles in init_node
+    print "Done running A-star algorithm (Uniform) on 8-puzzle!"
+    print "Printing Nodes from init_node:"
+    print_node(init_node)
 
         # now that tree is created, traverse tree shortest path.
 
@@ -154,7 +160,8 @@ def misplaced_tile_search(puzzle):
     print_puzzle(puzzle)
     heuristic = find_missing_tiles(puzzle)
     print("Number of missing tiles: " + str(heuristic))
-    init_node = Node(1, heuristic, puzzle)
+    f = 1 + heuristic
+    init_node = Node(1, heuristic, f, puzzle)
     #add initial node to the queue
     nodes.append(init_node)
     puzzles_found.append(init_node.puzzle)
@@ -176,13 +183,14 @@ def misplaced_tile_search(puzzle):
         else:
             print "Populating Tree!"
             total_nodes = total_nodes + 1
-            run_A_star(node, node.h, node.g) #expand function
+            run_A_star(node, find_missing_tiles(node.puzzle), node.g, "misplaced") #expand function
+            #run_A_star(node, node.h, node.g) #expand function
             # run_A_star(init_node)
 
-        # print the puzzles in init_node
-        print "Done running A-star algorithm on 8-puzzle!"
-        print "Printing Nodes from init_node:"
-        print_node(init_node)
+    # print the puzzles in init_node
+    print "Done running A-star algorithm (Missing Tiles) on 8-puzzle!"
+    print "Printing Nodes from init_node:"
+    print_node(init_node)
 
 def find_missing_tiles(puzzle):
     num_missing = 0
@@ -192,10 +200,64 @@ def find_missing_tiles(puzzle):
                 num_missing = num_missing + 1
     return num_missing
 
+def manhattan_search(puzzle):
+    global max_in_queue, total_nodes, goal_depth
+
+    print("Expanding state: ")
+    print_puzzle(puzzle)
+    heuristic = find_manhattan_tiles(puzzle)
+    print("Cost (g) of current tile tiles: " + str(heuristic))
+    f = 1 + heuristic
+    init_node = Node(1, heuristic, f, puzzle)
+    #add initial node to the queue
+    nodes.append(init_node)
+    puzzles_found.append(init_node.puzzle)
+    print("Initial puzzle: ")
+    print init_node.puzzle
+
+    while len(nodes) > 0:
+        nodes.sort(key=operator.attrgetter('f'))
+        max_in_queue = max(max_in_queue, len(nodes))
+        node = nodes.pop(0)
+        puzzles_found.append(node.puzzle)
+        # populate init_node with children
+        print("Checking node puzzle")
+        if node.puzzle == eight_goal_state:
+            print "Goal!"
+            print_puzzle(node.puzzle)
+            goal_depth = node.g - 1
+            break
+        else:
+            print "Populating Tree!"
+            total_nodes = total_nodes + 1
+            run_A_star(node, find_manhattan_tiles(node.puzzle), node.g, "manhattan") #expand function
+            #run_A_star(node, node.h, node.g) #expand function
+            # run_A_star(init_node)
+
+    # print the puzzles in init_node
+    print "Done running A-star algorithm Manhattan on 8-puzzle!"
+    print "Printing Nodes from init_node:"
+    print_node(init_node)
+
+def find_manhattan_tiles(puzzle):
+    total_tiles_from_goal = 0 # This is the sum of all spaces each num is away from their goal
+    for i in xrange(3):
+        for j in xrange(3):
+            if(puzzle[i][j] != 0 and puzzle[i][j] != eight_goal_state[i][j]):
+                total_tiles_from_goal += calc_manhattan_h(puzzle[i][j], i, j)
+    return total_tiles_from_goal
+
+def calc_manhattan_h(curr_num, i, j):
+    tiles_from_goal = 0
+    for k in xrange(3): #search puzzle from curr_num to goal
+        for l in xrange(3):
+            if curr_num == eight_goal_state[k][l]:
+                tiles_from_goal = abs(i - k) + abs(j - l) # this find the distance away the curr_num is from the goal
+                return tiles_from_goal
+    return tiles_from_goal
 
 
-
-def run_A_star(start_node, h, g):
+def run_A_star(start_node, h, g, mode):
 #def run_A_star(start_node, heuristic/algorithm):
     #how do I know what children to add?
     #how do I take this 8-puzzle and put it into a node data structure
@@ -210,7 +272,7 @@ def run_A_star(start_node, h, g):
     parent_puzzle3 = deepcopy(start_node.puzzle)
     #nested for loop for this?
     for i in xrange(3):
-        print i
+        #print i
         for j in xrange(3):
             if start_node.puzzle[i][j] == 0:
                 blank_x = j
@@ -222,7 +284,7 @@ def run_A_star(start_node, h, g):
                 print start_node.puzzle[i][j]
 
     if((blank_x < 3 and blank_y - 1 < 3) and (blank_x >= 0 and blank_y - 1 >= 0 )): #swap blank tile with tile 'Up'
-        up_child = create_child(list(parent_puzzle), "up", blank_x, blank_y, h, g)
+        up_child = create_child(list(parent_puzzle), "up", blank_x, blank_y, h, g, mode)
         # check if child exists, add if doesn't exist
         node_exists = False
         # iterate through and find
@@ -237,7 +299,7 @@ def run_A_star(start_node, h, g):
             puzzles_found.append(up_child)
 
     if ((blank_x < 3 and blank_y + 1 < 3) and (blank_x >= 0 and blank_y + 1 >= 0)):  # swap blank tile with tile 'Down'
-        down_child = create_child(list(parent_puzzle1), "down", blank_x, blank_y, h, g)
+        down_child = create_child(list(parent_puzzle1), "down", blank_x, blank_y, h, g, mode)
         # check if child exists, add if doesn't exist
         node_exists = False
         # iterate through and find
@@ -253,7 +315,7 @@ def run_A_star(start_node, h, g):
 
     #add states for moving blank up, down, left, or right
     if ((blank_x + 1 < 3 and blank_y < 3) and (blank_x + 1 >= 0 and blank_y >= 0)):  # swap blank tile with tile 'Right'
-        right_child = create_child(list(parent_puzzle3), "right", blank_x, blank_y, h, g)
+        right_child = create_child(list(parent_puzzle3), "right", blank_x, blank_y, h, g, mode)
         # check if child exists, add if doesn't exist
         node_exists = False
         # iterate through and find
@@ -269,7 +331,7 @@ def run_A_star(start_node, h, g):
 
 
     if ((blank_x - 1 < 3 and blank_y < 3) and (blank_x - 1 >= 0 and blank_y >= 0)):  # swap blank tile with tile 'Left'
-        left_child = create_child(list(parent_puzzle2), "left", blank_x, blank_y, h, g)
+        left_child = create_child(list(parent_puzzle2), "left", blank_x, blank_y, h, g, mode)
         # check if child exists, add if doesn't exist
         node_exists = False
         if left_child.puzzle in puzzles_found:
@@ -289,7 +351,7 @@ def run_A_star(start_node, h, g):
 
     #todo output like this: print("The best state to expand with a g(n) = 1 and h(n) = 4 is")
 
-def create_child(puzzle, swap_index, blank_x, blank_y, h, g):
+def create_child(puzzle, swap_index, blank_x, blank_y, h, g, mode):
     child_puzzle = list(puzzle)
     new_x = 4
     new_y = 4
@@ -323,7 +385,7 @@ def create_child(puzzle, swap_index, blank_x, blank_y, h, g):
     print new_y
     print blank_x
     print blank_y
-    #swap blank to swap_index to create child puzzle
+    # swap blank to swap_index to create child puzzle
     tmp = child_puzzle[new_y][new_x]
     child_puzzle[new_y][new_x] = child_puzzle[blank_y][blank_x]
     child_puzzle[blank_y][blank_x] = tmp
@@ -331,15 +393,16 @@ def create_child(puzzle, swap_index, blank_x, blank_y, h, g):
     print child_puzzle[new_y][new_x]
     print child_puzzle[blank_y][blank_x]
     print "Child Puzzle for " + swap_index
-    print_puzzle(child_puzzle)
+    #print_puzzle(child_puzzle)
     print ""
-    #child_puzzle[new_x][new_y], child_puzzle[blank_x][blank_y] = child_puzzle[blank_x][blank_y], child_puzzle[new_x][new_y]
-    # if(child_puzzle == eight_goal_state): #if goal state, done!
-    #     print("Goal!")
-    return Node(g + 1, h, child_puzzle)
-    # else:
-    #     print("Not Goal :( keep going!!!")
-    #     run_A_star(Node(1, 0, 0, child_puzzle))
+
+    # change the value of h
+    if mode == "misplaced":
+        h = find_missing_tiles(child_puzzle)
+    elif mode == "manhattan":
+        h = find_manhattan_tiles(child_puzzle)
+    f = (g + 1) + h
+    return Node(g + 1, h, f, child_puzzle)
 
 
 
@@ -353,10 +416,10 @@ def print_node(start_node):
 
 
 class Node(object):
-    def __init__(self, g, h, puzzle):
+    def __init__(self, g, h, f, puzzle):
         self.g = g  # cost to next node
         self.h = h  # heuristic value from goal state
-        self.f = g + h  # f = g + h
+        self.f = f  # f = g + h
         self.puzzle = puzzle
         self.children = []
 
@@ -365,6 +428,6 @@ class Node(object):
 
 
 
-#below 2 lines are used to call main function
+# Below 2 lines are used to call main function
 if __name__ == "__main__":
     main()
