@@ -129,7 +129,7 @@ def uniform_cost_search(puzzle):
         node = nodes.pop(0)
         puzzles_found.append(node.puzzle)
 
-        print "The best state to expand with a g(n) = " + str(node.g) + "h(n) = " + str(node.h) + " is..."
+        print "The best state to expand with a g(n) = " + str(node.g) + " and h(n) = " + str(node.h) + " is..."
         print print_puzzle(node.puzzle)
         print "    Expanding this node..."
 
@@ -165,7 +165,7 @@ def misplaced_tile_search(puzzle):
         node = nodes.pop(0)
         puzzles_found.append(node.puzzle)
 
-        print "The best state to expand with a g(n) = " + str(node.g) + "h(n) = " + str(node.h) + " is..."
+        print "The best state to expand with a g(n) = " + str(node.g) + " and h(n) = " + str(node.h) + " is..."
         print_puzzle(node.puzzle)
         print "    Expanding this node..."
 
@@ -212,7 +212,7 @@ def manhattan_search(puzzle):
         node = nodes.pop(0)
         puzzles_found.append(node.puzzle)
 
-        print "The best state to expand with a g(n) = " + str(node.g) + "h(n) = " + str(node.h) + " is..."
+        print "The best state to expand with a g(n) = " + str(node.g) + " and h(n) = " + str(node.h) + " is..."
         print_puzzle(node.puzzle)
         print "    Expanding this node..."
 
